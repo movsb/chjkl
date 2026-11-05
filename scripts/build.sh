@@ -19,5 +19,11 @@ cat > "$app/Contents/Info.plist" <<'PLIST'
 <key>NSHighResolutionCapable</key><true/>
 </dict></plist>
 PLIST
-codesign --force --sign - "$app"
+# Use the same certificate on every build to preserve the signing identity.
+identity="${CHJKL_SIGN_IDENTITY:--}"
+codesign --force --sign "$identity" "$app"
+codesign --verify --strict "$app"
+if [[ "$identity" == "-" ]]; then
+    printf '%s\n' 'Warning: ad-hoc signing; rebuilding may invalidate Accessibility permission.' 'For recovery, run ./scripts/reset-accessibility.sh, then grant permission again.' >&2
+fi
 printf 'Built %s\n' "$app"

@@ -30,3 +30,21 @@ open build/Chjkl.app
 自动检查覆盖四键映射、自动重复、Command 提前释放、暂停时释放、左 Command、双 Command、Shift 保留和字母先按的行为。需要在真实桌面补充验证：TextEdit、终端、浏览器、Finder 中四键和长按；Shift 选区；右 Command 与字母不同释放顺序；睡眠唤醒；权限撤销后恢复。自动检查不能替代这些交互验证。
 
 实现参考：[Apple CGEvent 文档](https://developer.apple.com/documentation/coregraphics/cgevent)。
+
+## 重编译后辅助功能失效
+
+先退出旧进程，再仅重置 Chjkl 的辅助功能记录并打开新版本：
+
+```sh
+./scripts/reset-accessibility.sh
+```
+
+在系统设置中重新授权。如果旧条目仍在，使用 − 移除，再用 + 添加当前 `build/Chjkl.app`。若仍无法生效，退出并重新打开 Chjkl。此脚本不会授予权限，授权必须由你在系统设置中完成。
+
+默认构建使用 ad-hoc 临时签名，二进制变化后可能需要重复上述步骤。若有固定的代码签名证书，可以指定同一个身份：
+
+```sh
+CHJKL_SIGN_IDENTITY='你的代码签名证书名称或 SHA-1' ./scripts/build.sh
+```
+
+用 `security find-identity -v -p codesigning` 查看可用身份。切换到证书签名后首次仍需重新授权；之后保持相同证书、Bundle ID 和安装位置。固定证书能改善身份连续性，但不能保证系统永不要求重新授权。

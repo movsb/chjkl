@@ -16,7 +16,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         let menu = NSMenu()
-        menu.addItem(NSMenuItem(title: "右 ⌘ + H J K L → ← ↓ ↑ →", action: nil, keyEquivalent: ""))
+        menu.addItem(NSMenuItem(title: "右⌘+HJKL 改为 Vim 风格的方向键", action: nil, keyEquivalent: ""))
         menu.addItem(status)
         menu.addItem(.separator())
         for entry in [toggle,
