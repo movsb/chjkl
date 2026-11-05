@@ -5,6 +5,8 @@ macOS 13+ 菜单栏改键工具：右 Command + H/J/K/L → 左/下/上/右。
 
 ## 构建和运行
 
+可从 [Releases](https://github.com/movsb/chjkl/releases) 下载 `Chjkl-版本号-macOS-arm64.zip`，解压后将 `Chjkl.app` 移到「应用程序」再打开。Release 下载仅支持 Apple Silicon，要求 macOS 13+。当前使用 ad-hoc 签名、未公证；若系统阻止打开，可在系统设置 → 隐私与安全性中允许打开，再按下文授予辅助功能权限。
+
 ```sh
 ./scripts/build.sh
 open build/Chjkl.app
@@ -13,6 +15,17 @@ open build/Chjkl.app
 点击菜单栏 `⌘!` →「授权辅助功能…」，在系统设置 → 隐私与安全性 → 辅助功能中启用 Chjkl。如列表没有出现，使用 + 添加此 App。返回菜单点击「重试监听」；程序也会每 3 秒自动重试。`⌘↔` 表示事件监听已启用，`⌘Ⅱ` 表示映射暂停。
 
 建议将构建后的 App 复制到固定位置（如 ~/Applications）再授权和启用「登录时启动」。移动或重新构建采用临时签名的 App 后，系统可能要求重新授权。当前构建为本机架构，未公证。
+
+## 自动发布下载包
+
+将 `.github/workflows/release.yml` 合入并推送到 GitHub 后，推送 `vx.y.z` 格式的标签即可自动发行。标签指向的提交必须包含此工作流和构建脚本，例如：
+
+```sh
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+Actions 会检出该标签，运行测试、构建 Apple Silicon App、验证签名，再自动创建 Release、生成发行说明，并上传 `Chjkl-v0.1.0-macOS-arm64.zip` 和 `SHA256SUMS.txt`。App 内版本号同步为 `0.1.0`。使用内置 `GITHUB_TOKEN`，无需额外配置密钥；失败后可在 Actions 页面重新运行，已有 Release 会更新同名附件。标签严格要求三段数字，不支持预发行后缀。
 
 ## 行为和验证
 
