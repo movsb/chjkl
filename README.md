@@ -1,63 +1,47 @@
 # Chjkl
 
-macOS 13+ 菜单栏改键工具：右 Command + H/J/K/L → 左/下/上/右。
-使用系统 CGEventTap，无需虚拟键盘驱动。左 Command 保持原有行为；Shift、Option、Control 修饰保留，同时按左右 Command 时保留左 Command。
+**用右 ⌘ + H J K L 移动光标，手不用离开键盘主区。**
 
-## 构建和运行
+Chjkl 是一款 macOS 菜单栏工具，把 Vim 的方向键手感带到日常应用里。编辑文字、在 Finder 里浏览文件，或在终端里修改命令时，按住右 Command 就能用 H、J、K、L 代替方向键。
 
-可从 [Releases](https://github.com/movsb/chjkl/releases) 下载 `Chjkl-版本号-macOS-arm64.zip`，解压后将 `Chjkl.app` 移到「应用程序」再打开。Release 下载仅支持 Apple Silicon，要求 macOS 13+。当前使用 ad-hoc 签名、未公证；若系统阻止打开，可在系统设置 → 隐私与安全性中允许打开，再按下文授予辅助功能权限。
+**[下载 Chjkl for macOS](https://github.com/movsb/chjkl/releases/latest)** · Apple Silicon · macOS 13 或更新版本
+
+## 四个键，四个方向
+
+| 按住右 ⌘，再按 | H | J | K | L |
+| :--- | :---: | :---: | :---: | :---: |
+| 方向 | ← 左 | ↓ 下 | ↑ 上 | → 右 |
+
+- **长按连续移动。** 按住组合键，沿用系统的按键重复。
+- **配合修饰键使用。** 保留 Shift、Option 和 Control。例如，在文本编辑器里按右 ⌘ + Shift + L，可向右选中文字。
+- **照常使用 Command 快捷键。** 左 ⌘ 保持原有行为，右 ⌘ 仍可用于 H、J、K、L 以外的快捷键。
+- **随时暂停。** 在菜单栏暂停或恢复映射，也可以启用「登录时启动」。
+
+## 安装与使用
+
+1. 在 [GitHub Releases](https://github.com/movsb/chjkl/releases) 的 Assets 中下载 `Chjkl-v版本号-macOS-arm64.zip`，解压后把 `Chjkl.app` 拖到「应用程序」并打开。
+2. 点击菜单栏的 `⌘!` →「授权辅助功能…」，在「系统设置 → 隐私与安全性 → 辅助功能」中启用 Chjkl。如果列表里没有 Chjkl，点击「+」添加。
+3. 回到菜单栏点击「重试监听」。看到 `⌘↔` 后，在文本编辑器里试试 **右 ⌘ + L**。
+
+Chjkl 通过 macOS 的辅助功能权限监听并转换按键，无需安装键盘驱动。下载包使用临时签名且未经 Apple 公证。如果 macOS 拦截首次打开，可到「系统设置 → 隐私与安全性」查看是否提供「仍要打开」。
+
+## 遇到问题
+
+- **更新后按键没反应。** 在「辅助功能」中移除旧的 Chjkl 条目，重新添加「应用程序」里的 Chjkl，再点「重试监听」。
+- **在密码框里无法使用。** macOS 的安全输入可能阻止 Chjkl 接收按键。如果离开密码框或唤醒后映射异常，退出并重新打开 Chjkl。
+- **与其他改键工具冲突。** 如果 Karabiner 等工具也在处理右 ⌘ + H/J/K/L，请关闭其中对应的规则。
+
+<details>
+<summary>从源码构建与发布</summary>
 
 ```sh
+./scripts/test.sh
 ./scripts/build.sh
 open build/Chjkl.app
 ```
 
-点击菜单栏 `⌘!` →「授权辅助功能…」，在系统设置 → 隐私与安全性 → 辅助功能中启用 Chjkl。如列表没有出现，使用 + 添加此 App。返回菜单点击「重试监听」；程序也会每 3 秒自动重试。`⌘↔` 表示事件监听已启用，`⌘Ⅱ` 表示映射暂停。
+本地构建使用当前机器架构。重编译后如需清除 Chjkl 的辅助功能授权记录，可先退出 App，再运行 `./scripts/reset-accessibility.sh`，然后在系统设置中重新授权。若有固定的签名证书，可通过 `CHJKL_SIGN_IDENTITY` 指定签名身份。
 
-建议将构建后的 App 复制到固定位置（如 ~/Applications）再授权和启用「登录时启动」。移动或重新构建采用临时签名的 App 后，系统可能要求重新授权。当前构建为本机架构，未公证。
+推送指向待发布提交的 `vx.y.z` 标签会触发 GitHub Actions。测试和构建通过后，工作流会创建 Release，并上传 Apple Silicon ZIP 和 `SHA256SUMS.txt`。
 
-## 自动发布下载包
-
-将 `.github/workflows/release.yml` 合入并推送到 GitHub 后，推送 `vx.y.z` 格式的标签即可自动发行。标签指向的提交必须包含此工作流和构建脚本，例如：
-
-```sh
-git tag v0.1.0
-git push origin v0.1.0
-```
-
-Actions 会检出该标签，运行测试、构建 Apple Silicon App、验证签名，再自动创建 Release、生成发行说明，并上传 `Chjkl-v0.1.0-macOS-arm64.zip` 和 `SHA256SUMS.txt`。App 内版本号同步为 `0.1.0`。使用内置 `GITHUB_TOKEN`，无需额外配置密钥；失败后可在 Actions 页面重新运行，已有 Release 会更新同名附件。标签严格要求三段数字，不支持预发行后缀。
-
-## 行为和验证
-
-- 长按保留系统自动重复；每个按键从按下到释放使用同一个映射决定。
-- 右 Command 仍能用于其他快捷键。
-- 暂停时，已经映射的按键仍会正确处理后续重复和释放。
-- 监听被系统禁用后尝试恢复；唤醒及定时检查会重试监听。
-- 「监听已启用」仅说明事件 tap 正常，无法保证安全输入场景能收到键盘事件。密码框等安全输入场景可能不可用。休眠或安全输入期间若丢失释放事件，退出并重启 App。
-- 与 Karabiner 同时处理相同组合键会影响验证，试用时请先关闭其中对应规则。
-
-```sh
-./scripts/test.sh
-```
-
-自动检查覆盖四键映射、自动重复、Command 提前释放、暂停时释放、左 Command、双 Command、Shift 保留和字母先按的行为。需要在真实桌面补充验证：TextEdit、终端、浏览器、Finder 中四键和长按；Shift 选区；右 Command 与字母不同释放顺序；睡眠唤醒；权限撤销后恢复。自动检查不能替代这些交互验证。
-
-实现参考：[Apple CGEvent 文档](https://developer.apple.com/documentation/coregraphics/cgevent)。
-
-## 重编译后辅助功能失效
-
-先退出旧进程，再仅重置 Chjkl 的辅助功能记录并打开新版本：
-
-```sh
-./scripts/reset-accessibility.sh
-```
-
-在系统设置中重新授权。如果旧条目仍在，使用 − 移除，再用 + 添加当前 `build/Chjkl.app`。若仍无法生效，退出并重新打开 Chjkl。此脚本不会授予权限，授权必须由你在系统设置中完成。
-
-默认构建使用 ad-hoc 临时签名，二进制变化后可能需要重复上述步骤。若有固定的代码签名证书，可以指定同一个身份：
-
-```sh
-CHJKL_SIGN_IDENTITY='你的代码签名证书名称或 SHA-1' ./scripts/build.sh
-```
-
-用 `security find-identity -v -p codesigning` 查看可用身份。切换到证书签名后首次仍需重新授权；之后保持相同证书、Bundle ID 和安装位置。固定证书能改善身份连续性，但不能保证系统永不要求重新授权。
+</details>
